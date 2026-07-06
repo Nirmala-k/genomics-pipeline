@@ -1,16 +1,18 @@
 # Base image: NVIDIA Clara Parabricks (provides pbrun, CUDA, GPU libs)
 FROM nvcr.io/nvidia/clara/clara-parabricks:4.3.0-1
 
-# --- Python 3.11 (Parabricks base often ships an older/incompatible python) ---
+# Prevent apt from trying to open an interactive dialog (e.g. tzdata asking
+# for timezone) during the build, which hangs with no terminal attached.
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# --- Python (use whatever python3 the base image ships, avoid PPAs that
+# depend on reaching external keyservers, which is flaky in some build envs) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common gnupg dirmngr \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-       python3.11 python3.11-venv python3.11-distutils \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 \
-    && ln -sf /usr/bin/python3.11 /usr/local/bin/python \
-    && ln -sf /usr/bin/python3.11 /usr/local/bin/python3 \
+    python3 python3-venv python3-distutils \
+    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3 \
+    && ln -sf $(command -v python3) /usr/local/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
 # --- CLI bioinformatics tools ---
@@ -50,4 +52,7 @@ VOLUME ["/data"]
 # Default entrypoint: run the full pipeline. Override args at `docker run` /
 # Launchable job config time, e.g.:
 #   docker run ... genomics-pipeline --sample-id X --fastq-r1 ... --fastq-r2 ...
-ENTRYPOINT ["python3", "run_all.py"]
+# Explicit commands such as `python3 check_functions.py` also work.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

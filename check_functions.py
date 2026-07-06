@@ -15,6 +15,7 @@ before kicking off run_all.py.
 import importlib
 import shutil
 import sys
+from typing import Tuple
 
 from config import STAGE_BINARIES, STAGE_PY_IMPORTS
 
@@ -49,7 +50,7 @@ STAGE_KEY = {
 }
 
 
-def check_import(module_name: str, fn_name: str) -> tuple[bool, str]:
+def check_import(module_name: str, fn_name: str) -> Tuple[bool, str]:
     try:
         mod = importlib.import_module(module_name)
     except Exception as e:
@@ -61,7 +62,7 @@ def check_import(module_name: str, fn_name: str) -> tuple[bool, str]:
     return True, "import + function OK"
 
 
-def check_binaries(key: str) -> list[str]:
+def check_binaries(key: str) -> list:
     missing = []
     for binary in STAGE_BINARIES.get(key, []):
         if shutil.which(binary) is None:
@@ -69,7 +70,7 @@ def check_binaries(key: str) -> list[str]:
     return missing
 
 
-def check_py_imports(key: str) -> list[str]:
+def check_py_imports(key: str) -> list:
     missing = []
     for pkg in STAGE_PY_IMPORTS.get(key, []):
         try:

@@ -1,6 +1,7 @@
 import csv
 import os
 import subprocess
+from typing import Optional
 
 from config import CUSTOM_DIR
 from utils import mkdirs
@@ -22,8 +23,8 @@ def _tabix_lookup(path, chrom, pos, ref, alt, value_col, ref_col=2, alt_col=3):
 
 
 def custom_annotators(sample_id: str, merged_tsv: str,
-                       clinpred: str | None, cscape: str | None, denovo_db: str | None,
-                       funseq2: str | None, mistic: str | None) -> str:
+                       clinpred: Optional[str], cscape: Optional[str], denovo_db: Optional[str],
+                       funseq2: Optional[str], mistic: Optional[str]) -> str:
     paths = {"clinpred": clinpred, "cscape": cscape, "denovo_db": denovo_db,
              "funseq2": funseq2, "mistic": mistic}
     value_cols = {"clinpred": 5, "cscape": 4, "denovo_db": 4, "funseq2": -1, "mistic": 5}

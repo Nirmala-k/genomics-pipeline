@@ -1,4 +1,5 @@
 import os
+from typing import List, Optional, Tuple
 
 from config import ANNOT_OUT_DIR, VEP_CACHE_DIR
 from stages.install_opencravat import configure_oc_home
@@ -6,7 +7,7 @@ from utils import mkdirs, run
 
 
 def annotate_multi(sample_id: str, vcf_path: str, ref_fasta: str,
-                    dbnsfp_path: str | None, bcftools_annot_vcfs: list[str]) -> tuple[str, str]:
+                    dbnsfp_path: Optional[str], bcftools_annot_vcfs: List[str]) -> Tuple[str, str]:
     mkdirs(ANNOT_OUT_DIR, f"{ANNOT_OUT_DIR}/opencravat")
     configure_oc_home()
 

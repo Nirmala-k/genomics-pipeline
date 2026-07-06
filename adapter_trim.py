@@ -1,8 +1,10 @@
+from typing import Tuple
+
 from config import TRIM_DIR
 from utils import mkdirs, run
 
 
-def adapter_trim(sample_id: str, fastq_r1: str, fastq_r2: str) -> tuple[str, str]:
+def adapter_trim(sample_id: str, fastq_r1: str, fastq_r2: str) -> Tuple[str, str]:
     mkdirs(TRIM_DIR)
     out_r1 = f"{TRIM_DIR}/{sample_id}_R1.trimmed.fastq.gz"
     out_r2 = f"{TRIM_DIR}/{sample_id}_R2.trimmed.fastq.gz"

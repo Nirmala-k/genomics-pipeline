@@ -6,22 +6,17 @@ from utils import fetch, run
 
 
 def download_references() -> None:
-    ref_fa, ref_fa_gz = f"{REFS_DIR}/GRCh38.fa", f"{REFS_DIR}/GRCh38.fa.gz"
+    # NOTE: GRCh38.fa (+ .fai/.bwt/.amb/.ann/.pac/.sa) is expected to already
+    # be present under REFS_DIR — added manually / copied from the Modal
+    # volume. This function no longer downloads or indexes it. If it's
+    # missing, everything downstream (bwa/samtools/VEP) will fail loudly,
+    # which is the correct behavior rather than silently re-downloading it.
+    ref_fa = f"{REFS_DIR}/GRCh38.fa"
     if not os.path.exists(ref_fa):
-        fetch(
-            "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/"
-            "seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz",
-            ref_fa_gz,
-        )
-        run(["gunzip", "-c", ref_fa_gz], stdout=open(ref_fa, "wb"))
-        os.remove(ref_fa_gz)
+        print(f"[WARNING] {ref_fa} not found. Place GRCh38.fa (and its .fai/.bwt/.amb/.ann/.pac/.sa "
+              f"index files) under {REFS_DIR} manually before running the alignment stages.")
     else:
-        print(f"[skip] {ref_fa} already exists")
-
-    if not os.path.exists(f"{ref_fa}.fai"):
-        run(["samtools", "faidx", ref_fa])
-    if not os.path.exists(f"{ref_fa}.bwt"):
-        run(["bwa", "index", ref_fa])
+        print(f"[skip] {ref_fa} found, not re-downloading/re-indexing")
 
     fetch(
         "https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz",
@@ -61,8 +56,8 @@ def download_references() -> None:
     else:
         print(f"[skip] VEP cache already present at {vep_marker}")
 
-    manual_only = ["dbNSFP", "ClinPred", "CScape", "denovo-db", "FunSeq2", "MISTIC", "full CADD"]
-    print(f"[manual] Require click-through/registration, NOT auto-downloaded: {manual_only}")
+    manual_only = ["GRCh38.fa (+ indexes)", "dbNSFP", "ClinPred", "CScape", "denovo-db", "FunSeq2", "MISTIC", "full CADD"]
+    print(f"[manual] Require manual placement / click-through registration, NOT auto-downloaded: {manual_only}")
     print("Reference/DB download pass complete.")
 
 

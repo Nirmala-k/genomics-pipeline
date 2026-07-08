@@ -6,22 +6,16 @@ from utils import fetch, run
 
 
 def download_references() -> None:
-    ref_fa, ref_fa_gz = f"{REFS_DIR}/GRCh38.fa", f"{REFS_DIR}/GRCh38.fa.gz"
+    # GRCh38.fa + prebuilt bwa/samtools index files, hosted by us on Hugging
+    # Face (one-time indexing already done — avoids repeating the ~1hr
+    # `bwa index` build on every fresh environment).
+    HF_BASE = "https://huggingface.co/datasets/nirmala29/grch38-bwa-index/tree/main"
+    ref_fa = f"{REFS_DIR}/GRCh38.fa"
+    for suffix in ["", ".fai", ".bwt", ".amb", ".ann", ".pac", ".sa"]:
+        fname = f"GRCh38.fa{suffix}"
+        fetch(f"{HF_BASE}/{fname}", f"{REFS_DIR}/{fname}")
     if not os.path.exists(ref_fa):
-        fetch(
-            "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/"
-            "seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz",
-            ref_fa_gz,
-        )
-        run(["gunzip", "-c", ref_fa_gz], stdout=open(ref_fa, "wb"))
-        os.remove(ref_fa_gz)
-    else:
-        print(f"[skip] {ref_fa} already exists")
-
-    if not os.path.exists(f"{ref_fa}.fai"):
-        run(["samtools", "faidx", ref_fa])
-    if not os.path.exists(f"{ref_fa}.bwt"):
-        run(["bwa", "index", ref_fa])
+        print(f"[WARNING] {ref_fa} still missing after download attempt — check the HF_BASE URL above.")
 
     fetch(
         "https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz",

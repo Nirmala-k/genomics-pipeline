@@ -1,0 +1,5 @@
+# Ignore large/generated data directories
+/data/
+/refs/
+/grch38-bwa-index/
+/grch_bwa_index/
